@@ -4,7 +4,12 @@ package com.hmdp.utils;
  * @author 虎哥
  */
 
-
+/**
+ * 使用了 abstract 关键字，
+ * 是因为它只包含常量，没有实例变量或方法，
+ * 不需要被实例化。
+ * 这样可以防止其他代码误创建这个类的实例。
+ */
 public abstract class RegexPatterns {
     /**
      * 手机号正则
