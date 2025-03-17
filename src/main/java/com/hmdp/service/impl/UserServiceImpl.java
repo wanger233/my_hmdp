@@ -50,6 +50,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             //不符合 返回错误
             return Result.fail("手机号格式不正确，请重试！");
         }
+
+        //校验手机号是否已经尝试过发送验证码
+        String lockKey = LOGIN_LOCK + phone;
+        String lockPhone = LOGIN_FAIL_PHONE + phone;
+        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(lockPhone))){
+            //已经被拉黑了
+            log.debug("已经被拉黑了，2小时后再试！");
+            return Result.fail("已经被拉黑了，2小时后再试！");
+        }
+        if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(lockKey))) {
+            //如果存在，说明已经发送过验证码，返回错误
+            log.debug("验证码发送过于频繁，请稍后再试！");
+            //锁的值加1
+            Long count = stringRedisTemplate.opsForValue().increment(lockKey, 1);
+            //查看是否要放入黑名单
+            if (count > 3) {
+                //如果超过3次，放入黑名单
+                stringRedisTemplate.opsForValue().set(lockPhone, "1", LOGIN_FAIL_TTL, TimeUnit.MINUTES);
+                log.debug("手机号：{}，已被拉黑！", phone);
+                return Result.fail("此手机号，已被拉黑！");
+            }
+            return Result.fail("验证码发送过于频繁,请稍后再试！"+"剩余"+(3-count)+"次机会");
+        }
+        //如果不存在，说明没有发送过验证码，设置锁
+        stringRedisTemplate.opsForValue().setIfAbsent(lockKey, "1", LOGIN_LOCK_TTL, TimeUnit.MINUTES);
+
         //符合 生成验证码
         String code = RandomUtil.randomNumbers(6);
         //保存验证码到redis

@@ -5,6 +5,12 @@ public class RedisConstants {
     public static final Long LOGIN_CODE_TTL = 2L;
     public static final String LOGIN_USER_KEY = "login:token:";
     public static final Long LOGIN_USER_TTL = 36000L;
+    //防刷机制：登录锁，用于防止恶意刷验证码
+    public static final String LOGIN_LOCK = "login:lock:";
+    public static final Long LOGIN_LOCK_TTL = 1L;
+    //黑名单机制：维护一个黑名单，用于防止恶意刷验证码
+    public static final String LOGIN_FAIL_PHONE = "login:fail:phone:";
+    public static final Long LOGIN_FAIL_TTL = 36000L; // 两小时
 
     public static final Long CACHE_NULL_TTL = 2L;
 
