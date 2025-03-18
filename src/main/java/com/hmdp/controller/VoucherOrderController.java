@@ -26,8 +26,21 @@ public class VoucherOrderController {
         this.voucherOrderService = voucherOrderService;
     }
 
-    @PostMapping("seckill/{id}")
+    @PostMapping("/common/{id}")
+    public Result commonlVoucher(@PathVariable("id") Long voucherId) {
+        int buyNumber = 1;
+        return voucherOrderService.commonVoucher(voucherId, buyNumber);
+    }
+
+    @PostMapping("/limit/{id}")
+    public Result limitlVoucher(@PathVariable("id") Long voucherId) {
+        int buyNumber = 1;
+        return voucherOrderService.limitVoucher1(voucherId, buyNumber);
+    }
+
+    @PostMapping("/seckill/{id}")
     public Result seckillVoucher(@PathVariable("id") Long voucherId) {
-        return voucherOrderService.secKillVoucher(voucherId);
+        int buyNumber = 1;
+        return voucherOrderService.seckillVoucher(voucherId, buyNumber);
     }
 }

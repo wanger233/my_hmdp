@@ -12,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.hmdp.utils.RedisConstants.SECKILL_STOCK_KEY;
 
@@ -53,7 +56,18 @@ public class VoucherServiceImpl extends ServiceImpl<VoucherMapper, Voucher> impl
         seckillVoucher.setBeginTime(voucher.getBeginTime());
         seckillVoucher.setEndTime(voucher.getEndTime());
         seckillVoucherService.save(seckillVoucher);
+//        // 保存秒杀库存到Redis中
+//        stringRedisTemplate.opsForValue().set(SECKILL_STOCK_KEY + voucher.getId(), voucher.getStock().toString());
+
+        // 默认时区
+        ZoneId zoneId = ZoneId.systemDefault();
+
         // 保存秒杀库存到Redis中
-        stringRedisTemplate.opsForValue().set(SECKILL_STOCK_KEY + voucher.getId(), voucher.getStock().toString());
+        Map<String, Object> voucherMap = new HashMap<>();
+        voucherMap.put("id", voucher.getId());
+        voucherMap.put("stock", voucher.getStock());
+        voucherMap.put("beginTime", voucher.getBeginTime().atZone(zoneId).toInstant().toEpochMilli());  // 转换为时间戳（以毫秒为单位）
+        voucherMap.put("endTime", voucher.getEndTime().atZone(zoneId).toInstant().toEpochMilli());  // 转换为时间戳（以毫秒为单位）
+        stringRedisTemplate.opsForHash().putAll(SECKILL_STOCK_KEY + voucher.getId(),voucherMap);
     }
 }
