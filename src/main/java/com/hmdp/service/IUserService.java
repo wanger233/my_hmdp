@@ -25,4 +25,5 @@ public interface IUserService extends IService<User> {
 
     Result logout();
 
+    Result queryUserById(Long id);
 }

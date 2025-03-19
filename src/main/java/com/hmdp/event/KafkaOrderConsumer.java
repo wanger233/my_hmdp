@@ -10,6 +10,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -35,7 +36,7 @@ public class KafkaOrderConsumer {
 
     // 消费下单事件
     @KafkaListener(topics = {TOPIC_CREATE_ORDER})
-    public void handleCreateOrder(ConsumerRecord record) {
+    public void handleCreateOrder(ConsumerRecord record, Acknowledgment ack) {
         if (record == null || record.value() == null) {
             log.error("消息的内容为空!");
             return;
@@ -59,6 +60,8 @@ public class KafkaOrderConsumer {
 
             voucherOrderService.createVoucherOrder(voucherOrder);
         });
+        //ack 确认
+        ack.acknowledge();
     }
 
     // 下面是 消费订单保存失败事件 需要回滚
@@ -71,7 +74,7 @@ public class KafkaOrderConsumer {
     }
 
     @KafkaListener(topics = {TOPIC_SAVE_ORDER_FAILED})
-    public void handleSaveOrderFailed(ConsumerRecord record) {
+    public void handleSaveOrderFailed(ConsumerRecord record,Acknowledgment ack) {
         if (record == null || record.value() == null) {
             log.error("消息的内容为空!");
             return;
@@ -102,6 +105,8 @@ public class KafkaOrderConsumer {
         }else {
             log.info("redis中不存在此订单");
         }
+        //ack 确认
+        ack.acknowledge();
     }
 
     @PreDestroy

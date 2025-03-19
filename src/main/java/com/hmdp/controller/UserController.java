@@ -33,6 +33,12 @@ public class UserController {
     @Resource
     private IUserInfoService userInfoService;
 
+    @GetMapping("{id}")
+    public Result queryUserById(@PathVariable("id") Long id) {
+        // 查询用户信息
+        return userService.queryUserById(id);
+    }
+
     /**
      * 发送手机验证码
      */
