@@ -18,7 +18,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -162,6 +164,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
         return Result.ok(userDTO);
+    }
+
+    @Override
+    public List<Long> queryHotUser() {
+        //这里同样是模拟热点数据
+        List<Long> hotUsers = new ArrayList<>();
+        hotUsers.add(1011L);
+        hotUsers.add(1L);
+        return hotUsers;
     }
 
     private User createUserWithPhone(String phone) {

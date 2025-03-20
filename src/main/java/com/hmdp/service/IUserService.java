@@ -6,6 +6,7 @@ import com.hmdp.dto.Result;
 import com.hmdp.entity.User;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  * <p>
@@ -26,4 +27,6 @@ public interface IUserService extends IService<User> {
     Result logout();
 
     Result queryUserById(Long id);
+
+    List<Long> queryHotUser();
 }
