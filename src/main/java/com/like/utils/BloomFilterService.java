@@ -2,7 +2,9 @@ package com.like.utils;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.like.entity.LatestLikeBehavior;
 import com.like.entity.LikeBehavior;
+import com.like.mapper.LatestLikeBehaviorMapper;
 import com.like.mapper.LikeBehaviorMapper;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
@@ -22,6 +24,8 @@ public class BloomFilterService {
     private RedissonClient client;
     @Resource
     private LikeBehaviorMapper likeBehaviorMapper;
+    @Resource
+    private LatestLikeBehaviorMapper latestLikeBehaviorMapper;
 
     //每次查询的数据量
     private static final int PAGE_SIZE = 1000;
@@ -48,6 +52,25 @@ public class BloomFilterService {
         }while (!keys.isEmpty());
     }
 
+    public void initBloomFilter2(){
+        RBloomFilter<Object> bloomFilter = client.getBloomFilter(LIKE_BEHAVIOR_BLOOM_FILTER);
+        // 初始化布隆过滤器，设计预计元素数量为100万，误差率为1%
+        bloomFilter.tryInit(1000000L,0.01);
+        //page从1开始 进行存入数据
+        int pageNum = 1;
+        List<String> keys;
+        do {
+            //从数据库中查询数据,分页查询
+            keys = getKeysFromDatabase2(pageNum, PAGE_SIZE);
+            for (String key : keys) {
+                //将数据放入布隆过滤器
+                bloomFilter.add(key);
+            }
+            pageNum += 1;
+            //如果没有数据了，跳出循环
+        }while (!keys.isEmpty());
+    }
+
     private List<String> getKeysFromDatabase(int pageNum, int pageSize) {
 
         List<String> keys = new ArrayList<>();
@@ -60,6 +83,25 @@ public class BloomFilterService {
         List<LikeBehavior> records = page.getRecords();
         // 返回分页后的结果
         for (LikeBehavior record : records) {
+            //将数据放入List中
+            //key组合成 文章id+用户id
+            keys.add(record.getArticleId().toString() + record.getUserId().toString());
+        }
+        return keys;
+    }
+
+    private List<String> getKeysFromDatabase2(int pageNum, int pageSize) {
+
+        List<String> keys = new ArrayList<>();
+        // 创建分页对象
+        Page<LatestLikeBehavior> pageInfo = new Page<>(pageNum, pageSize);
+        // 调用 selectPage() 方法进行分页查询
+        Page<LatestLikeBehavior> page = latestLikeBehaviorMapper.selectPage(pageInfo, new QueryWrapper<LatestLikeBehavior>()
+                .eq("type", 1));// 根据实际需求构建查询条件
+        // 获取查询到的用户列表
+        List<LatestLikeBehavior> records = page.getRecords();
+        // 返回分页后的结果
+        for (LatestLikeBehavior record : records) {
             //将数据放入List中
             //key组合成 文章id+用户id
             keys.add(record.getArticleId().toString() + record.getUserId().toString());
@@ -110,7 +152,11 @@ public class BloomFilterService {
         // 2. 清空布隆过滤器
         bloomFilter.delete();
         // 3. 根据需要更新的数据，重新添加到布隆过滤器
+        //
         //我们有一个SQL表：latest_likes_log，记录了最新的点赞行为
-        // TODO
+        //
+        // 4. 调用 initBloomFilter2() 方法重新初始化布隆过滤器
+        initBloomFilter2();
+        // 这两个方法不同点在于查询的数据库表不一样，latestLikeBehaviorMapper查询我们新的表
     }
 }

@@ -4,7 +4,9 @@ import com.hmdp.dto.Result;
 import com.like.dto.LikeArticleDTO;
 import com.like.dto.LikeBehaviorDTO;
 import com.like.dto.LikeUserDTO;
+import com.like.service.ILikeArticleService;
 import com.like.service.ILikeBehaviorService;
+import com.like.service.ILikeUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,10 +21,10 @@ public class LikeController {
 
     @Resource
     private ILikeBehaviorService likeBehaviorService;
-//    @Resource
-//    private ILikeUserService likeUserService;
-//    @Resource
-//    private ILikeArticleService likeArticleService;
+    @Resource
+    private ILikeUserService likeUserService;
+    @Resource
+    private ILikeArticleService likeArticleService;
     /**
      * 用户点赞或取消点赞的行为接口
      */
@@ -31,19 +33,19 @@ public class LikeController {
         return likeBehaviorService.like(dto);
     }
 
-//    /**
-//     * 获取某一用户的点赞列表接口，为 文章ID 的 LIST
-//     */
-//    @PostMapping("/user")
-//    public Result getUserLikeList(@RequestBody LikeUserDTO dto) {
-//        return likeUserService.getUserLikeList(dto);
-//    }
-//
-//    /**
-//     * 获取某一文章的点赞列表接口，为 用户ID 的list
-//     */
-//    @PostMapping("/article")
-//    public Result getArticleLikeList(@RequestBody LikeArticleDTO dto) {
-//        return likeArticleService.getArticleLikeList(dto);
-//    }
+    /**
+     * 获取某一用户的点赞列表接口，为 文章ID 的 LIST
+     */
+    @PostMapping("/user")
+    public Result getUserLikeList(@RequestBody LikeUserDTO dto) {
+        return likeUserService.getUserLikeList(dto);
+    }
+
+    /**
+     * 获取某一文章的点赞列表接口，为 用户ID 的list
+     */
+    @PostMapping("/article")
+    public Result getArticleLikeList(@RequestBody LikeArticleDTO dto) {
+        return likeArticleService.getArticleLikeList(dto);
+    }
 }

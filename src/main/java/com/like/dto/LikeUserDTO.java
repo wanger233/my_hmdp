@@ -1,7 +1,10 @@
 package com.like.dto;
 
+import lombok.Data;
+
 import javax.validation.constraints.NotBlank;
 
+@Data
 public class LikeUserDTO {
     /**
      * 用户ID
